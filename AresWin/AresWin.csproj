@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Title>ARES Network Sentinel</Title>
-    <Version>17.0.0.0</Version>
+    <Version>1.0</Version>
     <Authors>AmilaPCS</Authors>
     <Company>Prasad Computer Systems pvt ltd.</Company>
     <Product>ARES Master Ctrl Network Dashboard</Product>
