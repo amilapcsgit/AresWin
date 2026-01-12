@@ -40,8 +40,9 @@ jobs:
       run: dotnet publish AresWin/AresWin.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish_output
 
     # 6. Upload the EXE to GitHub Actions Summary
+   # Upload the ENTIRE folder containing exe and required dlls
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: AresWin-App
-        path: ./publish_output/AresWin.exe
+        path: ./publish_output/  
