@@ -280,8 +280,8 @@
                                 <DropShadowEffect Color="#00EAFF" BlurRadius="10"/>
                             </Border.Effect>
                         </Border>
-                        <TextBlock Text="ARES v17.0" FontSize="26" Foreground="#00EAFF" FontWeight="Bold" FontFamily="Arial"/>
-                        <TextBlock Text=" // SENTINEL_NATIVE" FontSize="12" Foreground="#0088FF" VerticalAlignment="Bottom" Margin="10,0,0,5" FontFamily="Consolas"/>
+                        <TextBlock Text="ARES Win v1.0" FontSize="26" Foreground="White" FontWeight="Bold" FontFamily="Arial"/>
+                        <TextBlock Text=" // L.J. Amila Prasad Perera" FontSize="12" Foreground="#0088FF" VerticalAlignment="Bottom" Margin="10,0,0,5" FontFamily="Consolas"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -298,7 +298,7 @@
                         </Button>
                         <Rectangle Width="5"/>
                         <Button x:Name="btnClose" Style="{StaticResource Style_Btn_Red}" Width="35" Height="35" Click="btnClose_Click">
-                            <Path Data="M 0,0 L 12,12 M 12,0 L 0,12" Stroke="#FF003C" StrokeThickness="2"/>
+                            <Path Data="M 0,0 L 12,12 M 12,0 L 0,12" Stroke="#FFFFFF" StrokeThickness="2"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -393,9 +393,9 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <Button x:Name="btnRefresh" Style="{StaticResource Style_Btn_Cyan}" Content="REFRESH GRID [F5]" Width="160" Height="40" Margin="5" Click="btnRefresh_Click"/>
                         <Rectangle Width="20"/>
-                        <Button x:Name="btnAI" Style="{StaticResource Style_Btn_Orange}" Content="ANALYZE WITH AI" Width="160" Height="40" Margin="5" Click="btnAI_Click"/>
-                        <Button x:Name="btnKill" Style="{StaticResource Style_Btn_Red}" Content="TERMINATE PROC" Width="160" Height="40" Margin="5" Click="btnKill_Click"/>
-                        <Button x:Name="btnBlock" Style="{StaticResource Style_Btn_Red}" Content="BLOCK IP (FW)" Width="160" Height="40" Margin="5" Click="btnBlock_Click"/>
+                        <Button x:Name="btnAI" Style="{StaticResource Style_Btn_Orange}" Content="ANALYZE WITH GEMINI" Width="160" Height="40" Margin="5" Click="btnAI_Click" Foreground="White"/>
+                        <Button x:Name="btnKill" Style="{StaticResource Style_Btn_Red}" Content="TERMINATE PROCESS" Width="160" Height="40" Margin="5" Click="btnKill_Click" Foreground="White"/>
+                        <Button x:Name="btnBlock" Style="{StaticResource Style_Btn_Red}" Content="BLOCK IP" Width="160" Height="40" Margin="5" Click="btnBlock_Click" Foreground="White"/>
                     </StackPanel>
                 </Grid>
             </Grid>
