@@ -1,0 +1,404 @@
+﻿<Window x:Class="AresWin.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AresWin"
+        mc:Ignorable="d"
+        Title="ARES v17.0" Height="900" Width="1550"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent">
+
+    <Window.Resources>
+        <!-- PALETTE -->
+        <SolidColorBrush x:Key="TronCyan" Color="#00EAFF"/>
+        <SolidColorBrush x:Key="TronBlue" Color="#0088FF"/>
+        <SolidColorBrush x:Key="TronOrange" Color="#FF9900"/>
+        <SolidColorBrush x:Key="TronRed" Color="#FF003C"/>
+
+        <!-- EFFECTS -->
+        <DropShadowEffect x:Key="GlowCyan" Color="#00EAFF" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
+        <DropShadowEffect x:Key="GlowOrange" Color="#FF9900" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
+        <DropShadowEffect x:Key="GlowRed" Color="#FF003C" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
+        <DropShadowEffect x:Key="TextGlow" Color="#0088FF" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
+
+        <!-- SCROLLBAR -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#050510"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="#050510">
+                            <Track x:Name="PART_Track" IsDirectionReversed="true">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#002244" BorderBrush="#00EAFF" BorderThickness="1"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- CYAN BUTTON -->
+        <Style x:Key="Style_Btn_Cyan" TargetType="Button">
+            <Setter Property="Background" Value="#CC000510"/>
+            <Setter Property="Foreground" Value="#00EAFF"/>
+            <Setter Property="BorderBrush" Value="#00EAFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowCyan}"/>
+                                <Setter TargetName="border" Property="Background" Value="#002244"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#00EAFF"/>
+                                <Setter Property="Foreground" Value="#000000"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ORANGE BUTTON -->
+        <Style x:Key="Style_Btn_Orange" TargetType="Button">
+            <Setter Property="Background" Value="#CC000510"/>
+            <Setter Property="Foreground" Value="#FF9900"/>
+            <Setter Property="BorderBrush" Value="#FF9900"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowOrange}"/>
+                                <Setter TargetName="border" Property="Background" Value="#331100"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FF9900"/>
+                                <Setter Property="Foreground" Value="#000000"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- RED BUTTON -->
+        <Style x:Key="Style_Btn_Red" TargetType="Button">
+            <Setter Property="Background" Value="#CC000510"/>
+            <Setter Property="Foreground" Value="#FF003C"/>
+            <Setter Property="BorderBrush" Value="#FF003C"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowRed}"/>
+                                <Setter TargetName="border" Property="Background" Value="#330000"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FF003C"/>
+                                <Setter Property="Foreground" Value="#000000"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TOGGLE CYAN -->
+        <Style x:Key="Style_Toggle_Cyan" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#CC000510"/>
+            <Setter Property="Foreground" Value="#00EAFF"/>
+            <Setter Property="BorderBrush" Value="#00EAFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowCyan}"/>
+                                <Setter TargetName="border" Property="Background" Value="#002244"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#002244"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowCyan}"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TOGGLE ORANGE -->
+        <Style x:Key="Style_Toggle_Orange" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#CC000510"/>
+            <Setter Property="Foreground" Value="#FF9900"/>
+            <Setter Property="BorderBrush" Value="#FF9900"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowOrange}"/>
+                                <Setter TargetName="border" Property="Background" Value="#331100"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#331100"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowOrange}"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DATAGRID -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#EEE"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#002244"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="RowBackground" Value="Transparent"/>
+            <Setter Property="AlternatingRowBackground" Value="#10004488"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#001122"/>
+            <Setter Property="Foreground" Value="#00EAFF"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#00EAFF"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" BorderBrush="Transparent" Background="{TemplateBinding Background}">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#003366"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="BorderBrush" Value="#00EAFF"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <!-- MAIN UI -->
+    <Border BorderBrush="#00EAFF" BorderThickness="3" CornerRadius="10" Background="#000510" ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#00EAFF" BlurRadius="15" Opacity="0.3"/>
+        </Border.Effect>
+        <Grid>
+            <!-- ANIMATION LAYER -->
+            <Canvas x:Name="MatrixCanvas" IsHitTestVisible="False" Background="#000205"/>
+
+            <!-- CONTENT -->
+            <Grid Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="70"/>
+                </Grid.RowDefinitions>
+
+                <!-- HEADER -->
+                <Grid Grid.Row="0" x:Name="DragBar" Background="Transparent" MouseLeftButtonDown="DragBar_MouseLeftButtonDown">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border BorderBrush="#00EAFF" BorderThickness="2" CornerRadius="3" Width="30" Height="30" Margin="0,0,12,0">
+                            <TextBlock Text="A" Foreground="#00EAFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00EAFF" BlurRadius="10"/>
+                            </Border.Effect>
+                        </Border>
+                        <TextBlock Text="ARES v17.0" FontSize="26" Foreground="#00EAFF" FontWeight="Bold" FontFamily="Arial"/>
+                        <TextBlock Text=" // SENTINEL_NATIVE" FontSize="12" Foreground="#0088FF" VerticalAlignment="Bottom" Margin="10,0,0,5" FontFamily="Consolas"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <ToggleButton x:Name="btnGroup" Content="UNGROUP APPS" IsChecked="True" Style="{StaticResource Style_Toggle_Cyan}" Width="140" Height="35" Click="btnGroup_Click"/>
+                        <Rectangle Width="10"/>
+                        <ToggleButton x:Name="btnLan" Content="SHOW LAN" Style="{StaticResource Style_Toggle_Cyan}" Width="140" Height="35" Click="btnLan_Click"/>
+                        <Rectangle Width="10"/>
+                        <ToggleButton x:Name="btnPause" Content="PAUSE SCAN" Style="{StaticResource Style_Toggle_Orange}" Width="140" Height="35" Click="btnPause_Click"/>
+                        <Rectangle Width="30"/>
+                        <Button x:Name="btnMin" Style="{StaticResource Style_Btn_Cyan}" Content="_" Width="35" Height="35" VerticalContentAlignment="Bottom" FontWeight="Bold" Click="btnMin_Click"/>
+                        <Rectangle Width="5"/>
+                        <Button x:Name="btnMax" Style="{StaticResource Style_Btn_Cyan}" Width="35" Height="35" Click="btnMax_Click">
+                            <Rectangle Width="12" Height="12" Stroke="#00EAFF" StrokeThickness="2"/>
+                        </Button>
+                        <Rectangle Width="5"/>
+                        <Button x:Name="btnClose" Style="{StaticResource Style_Btn_Red}" Width="35" Height="35" Click="btnClose_Click">
+                            <Path Data="M 0,0 L 12,12 M 12,0 L 0,12" Stroke="#FF003C" StrokeThickness="2"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- GRID -->
+                <DataGrid Grid.Row="1" x:Name="gridConnections" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,20" SelectionChanged="gridConnections_SelectionChanged">
+                    <DataGrid.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" Foreground="#00EAFF" FontWeight="Bold" Margin="5"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </DataGrid.GroupStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="PID" Binding="{Binding PID}" Width="70" Foreground="#666"/>
+                        <DataGridTextColumn Header="REMOTE IP" Binding="{Binding RemoteAddress}" Width="140" Foreground="#EEE"/>
+                        <DataGridTextColumn Header="PORT" Binding="{Binding RemotePort}" Width="70" Foreground="#00EAFF"/>
+
+                        <DataGridTemplateColumn Header="LOCATION" Width="220">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Location}" Foreground="White" FontWeight="Bold"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="NETWORK / REGION" Width="280">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Network}" Foreground="#00EAFF"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="THREAT" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Risk}" FontWeight="Bold" x:Name="txtRisk"/>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Risk}" Value="HIGH">
+                                            <Setter TargetName="txtRisk" Property="Foreground" Value="#FF003C"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Risk}" Value="MODERATE">
+                                            <Setter TargetName="txtRisk" Property="Foreground" Value="#FF9900"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Risk}" Value="LOW">
+                                            <Setter TargetName="txtRisk" Property="Foreground" Value="#00EAFF"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="STATE" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding State}" Foreground="White"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- INFO -->
+                <Border Grid.Row="2" BorderBrush="#004488" BorderThickness="1,0,1,1" Background="#88000510" Padding="10" Margin="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text=" > " Foreground="#00EAFF" FontFamily="Consolas" FontWeight="Bold"/>
+                            <TextBlock x:Name="txtTarget" Text="SYSTEM READY" Foreground="#00EAFF" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- FOOTER -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtStatus" Text="ONLINE" Foreground="#00FF00" FontFamily="Consolas"/>
+                        <TextBlock x:Name="txtCount" Text=" | NODES ACTIVE: 0" Foreground="#00FF00" FontFamily="Consolas"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button x:Name="btnRefresh" Style="{StaticResource Style_Btn_Cyan}" Content="REFRESH GRID [F5]" Width="160" Height="40" Margin="5" Click="btnRefresh_Click"/>
+                        <Rectangle Width="20"/>
+                        <Button x:Name="btnAI" Style="{StaticResource Style_Btn_Orange}" Content="ANALYZE WITH AI" Width="160" Height="40" Margin="5" Click="btnAI_Click"/>
+                        <Button x:Name="btnKill" Style="{StaticResource Style_Btn_Red}" Content="TERMINATE PROC" Width="160" Height="40" Margin="5" Click="btnKill_Click"/>
+                        <Button x:Name="btnBlock" Style="{StaticResource Style_Btn_Red}" Content="BLOCK IP (FW)" Width="160" Height="40" Margin="5" Click="btnBlock_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
