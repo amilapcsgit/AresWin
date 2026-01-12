@@ -10,6 +10,20 @@ This is **visibility + control**, executed cleanly on native Windows.
 
 ---
 
+[![Download Latest](https://img.shields.io/badge/DOWNLOAD-ARES_v1.2-00eaff?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/amilapcsgit/AresWin/releases/latest/download/AresWin-Setup.zip)
+
+> **A sci-fi themed real-time network monitoring dashboard built with .NET 8 and WPF.**
+
+## 🚀 Quick Deployment
+This application is **portable** and does not require installation.
+
+1. **[Click here to download the latest version](https://github.com/amilapcsgit/AresWin/releases/latest/download/AresWin-Setup.zip)**.
+2. **Extract** the ZIP file to any folder.
+3. Run **`AresWin.exe`**.
+   * *Note: Run as Administrator to enable Firewall Blocking and Process Termination features.*
+
+---
+
 ## 🟦 What is ARES?
 
 ARES wraps **native Windows networking utilities** (`netstat`, `netsh`) and enriches their output with **process intelligence, geolocation, and heuristic risk analysis**, presented through a GPU-accelerated WPF interface.
