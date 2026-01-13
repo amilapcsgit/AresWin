@@ -15,11 +15,13 @@
         <SolidColorBrush x:Key="TronBlue" Color="#0088FF"/>
         <SolidColorBrush x:Key="TronOrange" Color="#FF9900"/>
         <SolidColorBrush x:Key="TronRed" Color="#FF003C"/>
+        <SolidColorBrush x:Key="TronGreen" Color="#00FF6A"/>
 
         <!-- EFFECTS -->
         <DropShadowEffect x:Key="GlowCyan" Color="#00EAFF" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
         <DropShadowEffect x:Key="GlowOrange" Color="#FF9900" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
         <DropShadowEffect x:Key="GlowRed" Color="#FF003C" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
+        <DropShadowEffect x:Key="GlowGreen" Color="#00FF6A" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
         <DropShadowEffect x:Key="TextGlow" Color="#0088FF" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
 
         <!-- SCROLLBAR -->
@@ -230,6 +232,43 @@
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="BorderBrush" Value="#00EAFF"/>
             <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridColumnHeader">
+                        <Border x:Name="headerBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0,18,0"/>
+                                <TextBlock x:Name="SortArrow" Foreground="#00EAFF" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" Opacity="0.9"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="headerBorder" Property="Background" Value="#001A33"/>
+                            </Trigger>
+                            <Trigger Property="SortDirection" Value="Ascending">
+                                <Setter TargetName="SortArrow" Property="Text" Value="▲"/>
+                            </Trigger>
+                            <Trigger Property="SortDirection" Value="Descending">
+                                <Setter TargetName="SortArrow" Property="Text" Value="▼"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#081326"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#003366"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="DataGridCell">
             <Setter Property="Padding" Value="5"/>
@@ -251,6 +290,29 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <DataTemplate x:Key="IpIntelCardTemplate">
+            <Border Background="#050B1A" BorderBrush="#00EAFF" BorderThickness="1" CornerRadius="6" Padding="8">
+                <Border.Effect>
+                    <DropShadowEffect Color="#00EAFF" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="INTEL CARD" Foreground="#00EAFF" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="Location: " Foreground="#8899AA"/>
+                        <TextBlock Text="{Binding Location}" Foreground="White" FontWeight="Bold"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="ISP: " Foreground="#8899AA"/>
+                        <TextBlock Text="{Binding Network}" Foreground="#00EAFF"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Country: " Foreground="#8899AA"/>
+                        <TextBlock Text="{Binding Country}" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
 
     <!-- MAIN UI -->
@@ -304,7 +366,7 @@
                 </Grid>
 
                 <!-- GRID -->
-                <DataGrid Grid.Row="1" x:Name="gridConnections" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,20" SelectionChanged="gridConnections_SelectionChanged">
+                <DataGrid Grid.Row="1" x:Name="gridConnections" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,20" SelectionChanged="gridConnections_SelectionChanged" Sorting="gridConnections_Sorting" CanUserSortColumns="True">
                     <DataGrid.GroupStyle>
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>
@@ -317,11 +379,21 @@
                         </GroupStyle>
                     </DataGrid.GroupStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="PID" Binding="{Binding PID}" Width="70" Foreground="#666"/>
-                        <DataGridTextColumn Header="REMOTE IP" Binding="{Binding RemoteAddress}" Width="140" Foreground="#EEE"/>
-                        <DataGridTextColumn Header="PORT" Binding="{Binding RemotePort}" Width="70" Foreground="#00EAFF"/>
+                        <DataGridTextColumn Header="PID" Binding="{Binding PID}" Width="70" Foreground="#666" SortMemberPath="PID"/>
+                        <DataGridTemplateColumn Header="REMOTE IP" Width="160" SortMemberPath="RemoteAddress">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding RemoteAddress}" Foreground="#EEE">
+                                        <TextBlock.ToolTip>
+                                            <ToolTip Placement="Mouse" ContentTemplate="{StaticResource IpIntelCardTemplate}" Background="Transparent" BorderThickness="0" Padding="0"/>
+                                        </TextBlock.ToolTip>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="PORT" Binding="{Binding RemotePort}" Width="70" Foreground="#00EAFF" SortMemberPath="RemotePort"/>
 
-                        <DataGridTemplateColumn Header="LOCATION" Width="220">
+                        <DataGridTemplateColumn Header="LOCATION" Width="220" SortMemberPath="Location">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Location}" Foreground="White" FontWeight="Bold"/>
@@ -329,7 +401,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="NETWORK / REGION" Width="280">
+                        <DataGridTemplateColumn Header="NETWORK / REGION" Width="280" SortMemberPath="Network">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Network}" Foreground="#00EAFF"/>
@@ -337,7 +409,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="THREAT" Width="100">
+                        <DataGridTemplateColumn Header="THREAT" Width="100" SortMemberPath="Risk">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Risk}" FontWeight="Bold" x:Name="txtRisk"/>
@@ -356,7 +428,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="STATE" Width="*">
+                        <DataGridTemplateColumn Header="STATE" Width="*" SortMemberPath="State">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding State}" Foreground="White"/>
@@ -389,6 +461,9 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="txtStatus" Text="ONLINE" Foreground="#00FF00" FontFamily="Consolas"/>
                         <TextBlock x:Name="txtCount" Text=" | NODES ACTIVE: 0" Foreground="#00FF00" FontFamily="Consolas"/>
+                        <TextBlock Text=" | AGENT" Foreground="#00EAFF" FontFamily="Consolas" Margin="10,0,0,0"/>
+                        <Ellipse x:Name="agentStatusDot" Width="8" Height="8" Fill="#00FF6A" Margin="6,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtAgentStatus" Text="CONNECTED" Foreground="#00FF6A" FontFamily="Consolas"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <Button x:Name="btnRefresh" Style="{StaticResource Style_Btn_Cyan}" Content="REFRESH GRID [F5]" Width="160" Height="40" Margin="5" Click="btnRefresh_Click"/>

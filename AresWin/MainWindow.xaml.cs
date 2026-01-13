@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json; // Requires .NET Core 3.1+ or .NET 5/6/8
 using System.Text.RegularExpressions;
@@ -39,6 +41,8 @@ namespace AresWin
         private Dictionary<string, ConnectionInfo> _geoCache = new Dictionary<string, ConnectionInfo>();
 
         private bool _isScanning = false;
+        private string? _currentSortMember;
+        private ListSortDirection _currentSortDirection = ListSortDirection.Ascending;
         private DispatcherTimer? _scanTimer;
         private DispatcherTimer? _animTimer;
         private List<MatrixStream> _matrixStreams = new List<MatrixStream>();
@@ -151,6 +155,7 @@ namespace AresWin
 
             txtTarget.Text = "SCANNING NETWORK...";
             txtTarget.Foreground = Brushes.Yellow;
+            SetAgentStatus("CONNECTING", (Brush)FindResource("TronOrange"), (Effect)FindResource("GlowOrange"));
 
             try
             {
@@ -178,11 +183,13 @@ namespace AresWin
                 txtCount.Text = $" | NODES ACTIVE: {_connections.Count}";
                 txtTarget.Text = "SYSTEM READY";
                 txtTarget.Foreground = (SolidColorBrush)FindResource("TronCyan");
+                SetAgentStatus("CONNECTED", (Brush)FindResource("TronGreen"), (Effect)FindResource("GlowGreen"));
             }
             catch (Exception ex)
             {
                 // Handle errors silently or log
                 Debug.WriteLine(ex.Message);
+                SetAgentStatus("DISCONNECTED", (Brush)FindResource("TronRed"), (Effect)FindResource("GlowRed"));
             }
             finally
             {
@@ -355,6 +362,8 @@ namespace AresWin
             {
                 btnGroup.Content = "GROUP APPS";
             }
+
+            ApplySort();
         }
 
         // --- UI EVENT HANDLERS ---
@@ -392,6 +401,21 @@ namespace AresWin
                 txtTarget.Foreground = (Brush)FindResource(colorRes);
                 txtTarget.Text = $"TARGET LOCKED: {item.ProcessName} (PID:{item.PID}) :: {item.RemoteAddress} [{item.Location}] :: THREAT [{item.Risk}]";
             }
+        }
+
+        private void gridConnections_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            e.Handled = true;
+
+            string sortMember = e.Column.SortMemberPath;
+            if (string.IsNullOrWhiteSpace(sortMember)) return;
+
+            _currentSortDirection = e.Column.SortDirection != ListSortDirection.Ascending
+                ? ListSortDirection.Ascending
+                : ListSortDirection.Descending;
+            _currentSortMember = sortMember;
+
+            ApplySort();
         }
 
         private void btnKill_Click(object sender, RoutedEventArgs e)
@@ -442,6 +466,129 @@ namespace AresWin
                     Process.Start(new ProcessStartInfo { FileName = "https://gemini.google.com/app", UseShellExecute = true });
                 }
                 catch { }
+            }
+        }
+
+        private void ApplySort()
+        {
+            var view = CollectionViewSource.GetDefaultView(gridConnections.ItemsSource) as ListCollectionView;
+            if (view == null)
+            {
+                return;
+            }
+
+            foreach (var column in gridConnections.Columns)
+            {
+                column.SortDirection = column.SortMemberPath == _currentSortMember ? _currentSortDirection : null;
+            }
+
+            if (string.IsNullOrWhiteSpace(_currentSortMember))
+            {
+                view.CustomSort = null;
+                return;
+            }
+
+            view.CustomSort = new ConnectionInfoComparer(_currentSortMember, _currentSortDirection);
+        }
+
+        private void SetAgentStatus(string status, Brush color, Effect glow)
+        {
+            txtAgentStatus.Text = status;
+            txtAgentStatus.Foreground = color;
+            agentStatusDot.Fill = color;
+            agentStatusDot.Effect = glow;
+        }
+
+        private sealed class ConnectionInfoComparer : IComparer
+        {
+            private readonly string _member;
+            private readonly ListSortDirection _direction;
+
+            public ConnectionInfoComparer(string member, ListSortDirection direction)
+            {
+                _member = member;
+                _direction = direction;
+            }
+
+            public int Compare(object? x, object? y)
+            {
+                var left = x as ConnectionInfo;
+                var right = y as ConnectionInfo;
+                int result = CompareMember(left, right);
+                return _direction == ListSortDirection.Ascending ? result : -result;
+            }
+
+            private int CompareMember(ConnectionInfo? left, ConnectionInfo? right)
+            {
+                switch (_member)
+                {
+                    case nameof(ConnectionInfo.RemoteAddress):
+                        return CompareIp(left?.RemoteAddress, right?.RemoteAddress);
+                    case nameof(ConnectionInfo.PID):
+                        return (left?.PID ?? 0).CompareTo(right?.PID ?? 0);
+                    case nameof(ConnectionInfo.RemotePort):
+                        return (left?.RemotePort ?? 0).CompareTo(right?.RemotePort ?? 0);
+                    case nameof(ConnectionInfo.Location):
+                        return CompareText(left?.Location, right?.Location);
+                    case nameof(ConnectionInfo.Network):
+                        return CompareText(left?.Network, right?.Network);
+                    case nameof(ConnectionInfo.Risk):
+                        return CompareRisk(left?.Risk, right?.Risk);
+                    case nameof(ConnectionInfo.State):
+                        return CompareText(left?.State, right?.State);
+                    case nameof(ConnectionInfo.ProcessName):
+                        return CompareText(left?.ProcessName, right?.ProcessName);
+                    default:
+                        return CompareText(left?.ToString(), right?.ToString());
+                }
+            }
+
+            private static int CompareText(string? left, string? right)
+            {
+                return string.Compare(left, right, StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static int CompareRisk(string? left, string? right)
+            {
+                return RiskScore(left).CompareTo(RiskScore(right));
+            }
+
+            private static int RiskScore(string? risk)
+            {
+                return risk switch
+                {
+                    "HIGH" => 3,
+                    "MODERATE" => 2,
+                    "LOW" => 1,
+                    _ => 0
+                };
+            }
+
+            private static int CompareIp(string? left, string? right)
+            {
+                if (left == right) return 0;
+                if (left == null) return -1;
+                if (right == null) return 1;
+
+                left = left.Trim('[', ']');
+                right = right.Trim('[', ']');
+
+                if (IPAddress.TryParse(left, out var leftIp) && IPAddress.TryParse(right, out var rightIp))
+                {
+                    byte[] leftBytes = leftIp.GetAddressBytes();
+                    byte[] rightBytes = rightIp.GetAddressBytes();
+                    int lengthCompare = leftBytes.Length.CompareTo(rightBytes.Length);
+                    if (lengthCompare != 0) return lengthCompare;
+
+                    for (int i = 0; i < leftBytes.Length; i++)
+                    {
+                        int byteCompare = leftBytes[i].CompareTo(rightBytes[i]);
+                        if (byteCompare != 0) return byteCompare;
+                    }
+                    return 0;
+                }
+
+                return CompareText(left, right);
             }
         }
     }
