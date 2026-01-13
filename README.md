@@ -5,6 +5,8 @@
 ARES Network Sentinel is a **high-fidelity Windows network monitoring dashboard** inspired by **TRON / Cyberpunk aesthetics**.  
 Built in **C# (WPF) on .NET 8**, ARES transforms standard Windows networking utilities into a **visual command center** for real-time situational awareness and active defense.
 
+<img width="1046" height="660" alt="ARES Win v1 Screenshot" src="https://github.com/user-attachments/assets/b2fbe4bc-ebe3-42f1-ad12-5556453cce84" />
+
 This is not packet sniffing.  
 This is **visibility + control**, executed cleanly on native Windows.
 
