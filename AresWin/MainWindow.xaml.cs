@@ -47,6 +47,8 @@ namespace AresWin
         private DispatcherTimer? _animTimer;
         private List<MatrixStream> _matrixStreams = new List<MatrixStream>();
         private Random _rng = new Random();
+        private double _matrixSpeedMultiplier = 1.0;
+        private bool _isApplyingTheme;
 
         public MainWindow()
         {
@@ -57,6 +59,7 @@ namespace AresWin
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             InitMatrixAnimation();
+            InitializeSettings();
 
             // Set up auto-scan timer (10 seconds)
             _scanTimer = new DispatcherTimer();
@@ -142,7 +145,7 @@ namespace AresWin
 
         private void TickStream(MatrixStream s, double height)
         {
-            s.Y += s.Speed;
+            s.Y += s.Speed * _matrixSpeedMultiplier;
             if (s.Y > height) ResetStream(s, false, height);
             else s.Transform.Y = s.Y;
         }
@@ -390,6 +393,158 @@ namespace AresWin
             else
             {
                 RefreshGrid();
+            }
+        }
+
+        private void InitializeSettings()
+        {
+            _isApplyingTheme = true;
+            ThemeSelector.SelectedIndex = 0;
+            AccentSelector.SelectedIndex = 0;
+            btnAutoScan.IsChecked = true;
+            btnMatrixVisible.IsChecked = true;
+            btnMatrixAnim.IsChecked = true;
+            sliderMatrixSpeed.Value = 1.0;
+            txtMatrixSpeed.Text = "1.0x";
+            _isApplyingTheme = false;
+
+            ApplyTheme("Ares");
+        }
+
+        private void ThemeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isApplyingTheme) return;
+            if (ThemeSelector.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                ApplyTheme(tag);
+            }
+        }
+
+        private void AccentSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isApplyingTheme) return;
+            if (AccentSelector.SelectedItem is ComboBoxItem item && item.Tag is string hexColor)
+            {
+                SetAccentColor(hexColor);
+            }
+        }
+
+        private void btnAutoScan_Click(object sender, RoutedEventArgs e)
+        {
+            bool enabled = btnAutoScan.IsChecked == true;
+            btnAutoScan.Content = enabled ? "AUTO SCAN ENABLED" : "AUTO SCAN DISABLED";
+            if (_scanTimer != null)
+            {
+                if (enabled) _scanTimer.Start();
+                else _scanTimer.Stop();
+            }
+        }
+
+        private void btnMatrixVisible_Click(object sender, RoutedEventArgs e)
+        {
+            bool visible = btnMatrixVisible.IsChecked == true;
+            btnMatrixVisible.Content = visible ? "MATRIX VISIBLE" : "MATRIX HIDDEN";
+            MatrixCanvas.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void btnMatrixAnim_Click(object sender, RoutedEventArgs e)
+        {
+            bool enabled = btnMatrixAnim.IsChecked == true;
+            btnMatrixAnim.Content = enabled ? "MATRIX ANIMATION ON" : "MATRIX ANIMATION OFF";
+            if (_animTimer != null)
+            {
+                if (enabled) _animTimer.Start();
+                else _animTimer.Stop();
+            }
+        }
+
+        private void sliderMatrixSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            _matrixSpeedMultiplier = e.NewValue;
+            if (txtMatrixSpeed != null)
+            {
+                txtMatrixSpeed.Text = $"{_matrixSpeedMultiplier:0.0}x";
+            }
+        }
+
+        private void ApplyTheme(string themeTag)
+        {
+            _isApplyingTheme = true;
+
+            switch (themeTag)
+            {
+                case "WindowsDark":
+                    SetAccentColor("#0078D4", updateAccentSelector: true);
+                    SetBrushColor("AppBackgroundBrush", "#1E1E1E");
+                    SetBrushColor("CanvasBackgroundBrush", "#151515");
+                    SetBrushColor("PanelBackgroundBrush", "#252526");
+                    SetBrushColor("PanelBorderBrush", "#3C3C3C");
+                    SetBrushColor("TextPrimaryBrush", "#FFFFFF");
+                    SetBrushColor("TextSecondaryBrush", "#C8C8C8");
+                    break;
+                case "WindowsLight":
+                    SetAccentColor("#0078D4", updateAccentSelector: true);
+                    SetBrushColor("AppBackgroundBrush", "#F3F3F3");
+                    SetBrushColor("CanvasBackgroundBrush", "#F8F8F8");
+                    SetBrushColor("PanelBackgroundBrush", "#FFFFFF");
+                    SetBrushColor("PanelBorderBrush", "#D0D0D0");
+                    SetBrushColor("TextPrimaryBrush", "#111111");
+                    SetBrushColor("TextSecondaryBrush", "#555555");
+                    break;
+                default:
+                    SetAccentColor("#00EAFF", updateAccentSelector: true);
+                    SetBrushColor("AppBackgroundBrush", "#000510");
+                    SetBrushColor("CanvasBackgroundBrush", "#000205");
+                    SetBrushColor("PanelBackgroundBrush", "#050B1A");
+                    SetBrushColor("PanelBorderBrush", "#004488");
+                    SetBrushColor("TextPrimaryBrush", "#FFFFFF");
+                    SetBrushColor("TextSecondaryBrush", "#8899AA");
+                    break;
+            }
+
+            _isApplyingTheme = false;
+        }
+
+        private void SetAccentColor(string hexColor, bool updateAccentSelector = false)
+        {
+            SetBrushColor("TronCyan", hexColor);
+            SetBrushColor("TronBlue", hexColor);
+
+            SetDropShadowColor("GlowCyan", hexColor);
+            SetDropShadowColor("TextGlow", hexColor);
+
+            if (updateAccentSelector)
+            {
+                SelectComboBoxItemByTag(AccentSelector, hexColor);
+            }
+        }
+
+        private void SetBrushColor(string resourceKey, string hexColor)
+        {
+            if (FindResource(resourceKey) is SolidColorBrush brush)
+            {
+                brush.Color = (Color)ColorConverter.ConvertFromString(hexColor);
+            }
+        }
+
+        private void SetDropShadowColor(string resourceKey, string hexColor)
+        {
+            if (FindResource(resourceKey) is DropShadowEffect effect)
+            {
+                effect.Color = (Color)ColorConverter.ConvertFromString(hexColor);
+            }
+        }
+
+        private static void SelectComboBoxItemByTag(ComboBox comboBox, string tag)
+        {
+            if (comboBox == null) return;
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboItem && string.Equals(comboItem.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
+                {
+                    comboBox.SelectedItem = comboItem;
+                    return;
+                }
             }
         }
 

@@ -23,6 +23,14 @@
         <DropShadowEffect x:Key="GlowRed" Color="#FF003C" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
         <DropShadowEffect x:Key="GlowGreen" Color="#00FF6A" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
         <DropShadowEffect x:Key="TextGlow" Color="#0088FF" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
+        
+        <!-- THEME BRUSHES -->
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#000510"/>
+        <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#000205"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#050B1A"/>
+        <SolidColorBrush x:Key="PanelBorderBrush" Color="#004488"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#8899AA"/>
 
         <!-- SCROLLBAR -->
         <Style TargetType="ScrollBar">
@@ -316,13 +324,13 @@
     </Window.Resources>
 
     <!-- MAIN UI -->
-    <Border BorderBrush="#00EAFF" BorderThickness="3" CornerRadius="10" Background="#000510" ClipToBounds="True">
+    <Border BorderBrush="{StaticResource TronCyan}" BorderThickness="3" CornerRadius="10" Background="{StaticResource AppBackgroundBrush}" ClipToBounds="True">
         <Border.Effect>
             <DropShadowEffect Color="#00EAFF" BlurRadius="15" Opacity="0.3"/>
         </Border.Effect>
         <Grid>
             <!-- ANIMATION LAYER -->
-            <Canvas x:Name="MatrixCanvas" IsHitTestVisible="False" Background="#000205"/>
+            <Canvas x:Name="MatrixCanvas" IsHitTestVisible="False" Background="{StaticResource CanvasBackgroundBrush}"/>
 
             <!-- CONTENT -->
             <Grid Margin="15">
@@ -332,9 +340,13 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="70"/>
                 </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="320"/>
+                </Grid.ColumnDefinitions>
 
                 <!-- HEADER -->
-                <Grid Grid.Row="0" x:Name="DragBar" Background="Transparent" MouseLeftButtonDown="DragBar_MouseLeftButtonDown">
+                <Grid Grid.Row="0" Grid.ColumnSpan="2" x:Name="DragBar" Background="Transparent" MouseLeftButtonDown="DragBar_MouseLeftButtonDown">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border BorderBrush="#00EAFF" BorderThickness="2" CornerRadius="3" Width="30" Height="30" Margin="0,0,12,0">
                             <TextBlock Text="A" Foreground="#00EAFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -366,7 +378,7 @@
                 </Grid>
 
                 <!-- GRID -->
-                <DataGrid Grid.Row="1" x:Name="gridConnections" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,20" SelectionChanged="gridConnections_SelectionChanged" Sorting="gridConnections_Sorting" CanUserSortColumns="True">
+                <DataGrid Grid.Row="1" Grid.Column="0" x:Name="gridConnections" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,20" SelectionChanged="gridConnections_SelectionChanged" Sorting="gridConnections_Sorting" CanUserSortColumns="True">
                     <DataGrid.GroupStyle>
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>
@@ -439,7 +451,7 @@
                 </DataGrid>
 
                 <!-- INFO -->
-                <Border Grid.Row="2" BorderBrush="#004488" BorderThickness="1,0,1,1" Background="#88000510" Padding="10" Margin="0">
+                <Border Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1,0,1,1" Background="#88000510" Padding="10" Margin="0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -453,7 +465,7 @@
                 </Border>
 
                 <!-- FOOTER -->
-                <Grid Grid.Row="3">
+                <Grid Grid.Row="3" Grid.ColumnSpan="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -473,6 +485,41 @@
                         <Button x:Name="btnBlock" Style="{StaticResource Style_Btn_Red}" Content="BLOCK IP" Width="160" Height="40" Margin="5" Click="btnBlock_Click" Foreground="White"/>
                     </StackPanel>
                 </Grid>
+                
+                <!-- SETTINGS PANEL -->
+                <Border Grid.Row="1" Grid.Column="1" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Margin="20,20,0,20" Padding="12">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="SETTINGS GAUGE" Foreground="{StaticResource TronCyan}" FontWeight="Bold" FontSize="16" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="THEME" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="ThemeSelector" SelectionChanged="ThemeSelector_SelectionChanged" Height="28" Margin="0,0,0,12">
+                                <ComboBoxItem Content="ARES (TRON)" Tag="Ares"/>
+                                <ComboBoxItem Content="WINDOWS DARK" Tag="WindowsDark"/>
+                                <ComboBoxItem Content="WINDOWS LIGHT" Tag="WindowsLight"/>
+                            </ComboBox>
+
+                            <TextBlock Text="ACCENT COLOR" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="AccentSelector" SelectionChanged="AccentSelector_SelectionChanged" Height="28" Margin="0,0,0,12">
+                                <ComboBoxItem Content="CYAN" Tag="#00EAFF"/>
+                                <ComboBoxItem Content="ORANGE" Tag="#FF9900"/>
+                                <ComboBoxItem Content="GREEN" Tag="#00FF6A"/>
+                                <ComboBoxItem Content="RED" Tag="#FF003C"/>
+                            </ComboBox>
+
+                            <TextBlock Text="AUTO SCAN" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                            <ToggleButton x:Name="btnAutoScan" Content="AUTO SCAN ENABLED" IsChecked="True" Style="{StaticResource Style_Toggle_Cyan}" Height="32" Click="btnAutoScan_Click" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="MATRIX LAYER" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                            <ToggleButton x:Name="btnMatrixVisible" Content="MATRIX VISIBLE" IsChecked="True" Style="{StaticResource Style_Toggle_Cyan}" Height="32" Click="btnMatrixVisible_Click" Margin="0,0,0,8"/>
+                            <ToggleButton x:Name="btnMatrixAnim" Content="MATRIX ANIMATION ON" IsChecked="True" Style="{StaticResource Style_Toggle_Orange}" Height="32" Click="btnMatrixAnim_Click" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="MATRIX SPEED" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                            <Slider x:Name="sliderMatrixSpeed" Minimum="0.4" Maximum="2.0" Value="1.0" TickFrequency="0.2" IsSnapToTickEnabled="True" ValueChanged="sliderMatrixSpeed_ValueChanged"/>
+                            <TextBlock x:Name="txtMatrixSpeed" Text="1.0x" Foreground="{StaticResource TronCyan}" FontSize="12" Margin="0,6,0,0" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
             </Grid>
         </Grid>
     </Border>
