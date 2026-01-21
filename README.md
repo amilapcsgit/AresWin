@@ -16,6 +16,22 @@ This is **visibility + control**, executed cleanly on native Windows.
 
 > **A sci-fi themed real-time network monitoring dashboard built with .NET 8 and WPF.**
 
+## AresWin 2.0 Release Notes
+
+### Highlights
+- New Settings panel with theme, accent, and scan controls.
+- Theme system refreshed to apply consistent colors across controls.
+- Matrix layer visibility, animation, and speed now configurable.
+
+### UI & UX
+- Added Settings toggle in the main header.
+- Settings panel includes theme, accent color, auto scan, and matrix options.
+- Themed dialog replaces default MessageBox for AI prompt actions.
+
+### Technical
+- Project metadata updated to version 2.0.
+- Centralized brush updates and control style registration for theme consistency.
+
 ## 🚀 Quick Deployment
 This application is **portable** and does not require installation.
 
