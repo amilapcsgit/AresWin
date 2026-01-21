@@ -7,11 +7,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Title>ARES Network Sentinel</Title>
-    <Version>1.0</Version>
-    <Authors>AmilaPCS</Authors>
-    <Company>Prasad Computer Systems pvt ltd.</Company>
+    <Version>2.0</Version>
+    <Authors>L.J. Amila Prasad Perera</Authors>
+    <Company>Prasad Computer Systems - Sri Lanka</Company>
     <Product>ARES Master Ctrl Network Dashboard</Product>
-	<Description>Real-time network monitoring and threat detection system that shows what's going on with your PC once it's connected to the Internet</Description>
+    <Description>Real-time network monitoring and threat detection system that shows what's going on with your PC once it's connected to the Internet</Description>
     <Copyright>ARES Network Sentinel – Custom License</Copyright>
     <PackageProjectUrl>https://github.com/amilapcsgit/AresWin/</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -19,7 +19,7 @@
     <PackageIcon>AresWin.png</PackageIcon>
     <ApplicationIcon>ARES.ico</ApplicationIcon>
     <BaseOutputPath>Build</BaseOutputPath>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>ARES wraps native Windows networking utilities (netstat, netsh) and enriches their output with process intelligence, geolocation, and heuristic risk analysis, presented through a GPU-accelerated WPF interface.
 
@@ -37,14 +37,14 @@ All without kernel drivers, services, or invasive hooks.</PackageReleaseNotes>
 
   <ItemGroup>
     <None Include="..\README.md">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="AresWin.png">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>

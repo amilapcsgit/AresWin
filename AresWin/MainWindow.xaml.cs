@@ -6,11 +6,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json; // Requires .NET Core 3.1+ or .NET 5/6/8
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -48,6 +49,9 @@ namespace AresWin
         private List<MatrixStream> _matrixStreams = new List<MatrixStream>();
         private Random _rng = new Random();
         private double _matrixSpeedMultiplier = 1.0;
+        private bool _isApplyingTheme;
+
+        private SettingsWindow? _settingsWindow;
 
         public MainWindow()
         {
@@ -58,6 +62,7 @@ namespace AresWin
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             InitMatrixAnimation();
+            InitializeSettings();
 
             // Set up auto-scan timer (10 seconds)
             _scanTimer = new DispatcherTimer();
@@ -72,125 +77,7 @@ namespace AresWin
             RefreshGrid();
         }
 
-        public void ApplyThemePublic(string themeTag)
-        {
-            var theme = (themeTag ?? string.Empty).Trim();
-            switch (theme)
-            {
-                case "WindowsDark":
-                    ApplyThemeColors(
-                        background: "#1E1E1E",
-                        border: "#3A3A3A",
-                        textPrimary: "#FFFFFF",
-                        textSecondary: "#B0B0B0",
-                        controlBackground: "#2D2D30",
-                        controlForeground: "#FFFFFF",
-                        comboBackground: "#2D2D30",
-                        comboForeground: "#FFFFFF",
-                        comboBorder: "#3A3A3A");
-                    break;
-                case "WindowsLight":
-                    ApplyThemeColors(
-                        background: "#F3F3F3",
-                        border: "#C8C8C8",
-                        textPrimary: "#111111",
-                        textSecondary: "#555555",
-                        controlBackground: "#FFFFFF",
-                        controlForeground: "#111111",
-                        comboBackground: "#FFFFFF",
-                        comboForeground: "#111111",
-                        comboBorder: "#C8C8C8");
-                    break;
-                case "Ares":
-                default:
-                    ApplyThemeColors(
-                        background: "#050B1A",
-                        border: "#004488",
-                        textPrimary: "#FFFFFF",
-                        textSecondary: "#8899AA",
-                        controlBackground: "#050B1A",
-                        controlForeground: "#00EAFF",
-                        comboBackground: "#050B1A",
-                        comboForeground: "#00EAFF",
-                        comboBorder: "#004488");
-                    break;
-            }
-        }
-
-        public void SetAccentColorPublic(string hexColor)
-        {
-            if (!TryParseColor(hexColor, out var color))
-            {
-                return;
-            }
-
-            UpdateBrushResource(Resources, "TronCyan", color);
-            UpdateBrushResource(Application.Current?.Resources, "TronCyan", color);
-            UpdateBrushResource(Application.Current?.Resources, "ControlForegroundBrush", color);
-            UpdateBrushResource(Application.Current?.Resources, "ComboBoxForegroundBrush", color);
-
-            if (Resources.Contains("GlowCyan") && Resources["GlowCyan"] is DropShadowEffect glow)
-            {
-                glow.Color = color;
-            }
-
-            var appResources = Application.Current?.Resources;
-            if (appResources != null && appResources.Contains("GlowCyan") && appResources["GlowCyan"] is DropShadowEffect appGlow)
-            {
-                appGlow.Color = color;
-            }
-        }
-
-        public void SetAutoScanState(bool enabled)
-        {
-            if (_scanTimer == null)
-            {
-                return;
-            }
-
-            if (enabled)
-            {
-                _scanTimer.Start();
-            }
-            else
-            {
-                _scanTimer.Stop();
-            }
-        }
-
-        public void SetMatrixVisible(bool visible)
-        {
-            if (MatrixCanvas == null)
-            {
-                return;
-            }
-
-            MatrixCanvas.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
-        }
-
-        public void SetMatrixAnimation(bool enabled)
-        {
-            if (_animTimer == null)
-            {
-                return;
-            }
-
-            if (enabled)
-            {
-                _animTimer.Start();
-            }
-            else
-            {
-                _animTimer.Stop();
-            }
-        }
-
-        public void SetMatrixSpeed(double speedMultiplier)
-        {
-            _matrixSpeedMultiplier = Math.Max(0.1, speedMultiplier);
-        }
-
-        // --- MATRIX ANIMATION ENGINE ---
+        // --- MATRIX ANIMATION ENGINE by L.J. Amila Prasad Perera ---
         private class MatrixStream
         {
             public TextBlock Block { get; set; } = new TextBlock();
@@ -245,13 +132,13 @@ namespace AresWin
 
         private void ResetStream(MatrixStream s, bool startRandom, double height)
         {
-            string chars = "01XY";
-            int len = _rng.Next(4, 12);
+            string chars = "අමිල";
+            int len = _rng.Next(4, 8);
             string text = "";
             for (int i = 0; i < len; i++) text += chars[_rng.Next(chars.Length)] + "\n";
             s.Block.Text = text;
             s.Block.Opacity = _rng.Next(2, 6) / 10.0;
-            s.Speed = _rng.Next(4, 12);
+            s.Speed = _rng.Next(4, 8);
 
             if (startRandom) s.Y = -_rng.Next(0, (int)height);
             else s.Y = -(s.Block.ActualHeight + _rng.Next(50, 300));
@@ -264,77 +151,6 @@ namespace AresWin
             s.Y += s.Speed * _matrixSpeedMultiplier;
             if (s.Y > height) ResetStream(s, false, height);
             else s.Transform.Y = s.Y;
-        }
-
-        private void ApplyThemeColors(
-            string background,
-            string border,
-            string textPrimary,
-            string textSecondary,
-            string controlBackground,
-            string controlForeground,
-            string comboBackground,
-            string comboForeground,
-            string comboBorder)
-        {
-            var appResources = Application.Current?.Resources;
-            UpdateBrushResource(appResources, "PanelBackgroundBrush", background);
-            UpdateBrushResource(appResources, "PanelBorderBrush", border);
-            UpdateBrushResource(appResources, "TextPrimaryBrush", textPrimary);
-            UpdateBrushResource(appResources, "TextSecondaryBrush", textSecondary);
-            UpdateBrushResource(appResources, "ControlBackgroundBrush", controlBackground);
-            UpdateBrushResource(appResources, "ControlForegroundBrush", controlForeground);
-            UpdateBrushResource(appResources, "ComboBoxBackgroundBrush", comboBackground);
-            UpdateBrushResource(appResources, "ComboBoxForegroundBrush", comboForeground);
-            UpdateBrushResource(appResources, "ComboBoxBorderBrush", comboBorder);
-        }
-
-        private static void UpdateBrushResource(ResourceDictionary? resources, string key, string hexColor)
-        {
-            if (!TryParseColor(hexColor, out var color))
-            {
-                return;
-            }
-
-            UpdateBrushResource(resources, key, color);
-        }
-
-        private static void UpdateBrushResource(ResourceDictionary? resources, string key, Color color)
-        {
-            if (resources == null)
-            {
-                return;
-            }
-
-            if (resources.Contains(key) && resources[key] is SolidColorBrush brush)
-            {
-                brush.Color = color;
-                return;
-            }
-
-            resources[key] = new SolidColorBrush(color);
-        }
-
-        private static bool TryParseColor(string? value, out Color color)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                try
-                {
-                    var result = ColorConverter.ConvertFromString(value);
-                    if (result is Color converted)
-                    {
-                        color = converted;
-                        return true;
-                    }
-                }
-                catch (FormatException)
-                {
-                }
-            }
-
-            color = default;
-            return false;
         }
 
         // --- SCANNING LOGIC ---
@@ -583,6 +399,319 @@ namespace AresWin
             }
         }
 
+        private void InitializeSettings()
+        {
+            _isApplyingTheme = true;
+            ThemeSelector.SelectedIndex = 0;
+            AccentSelector.SelectedIndex = 0;
+            btnAutoScan.IsChecked = true;
+            btnMatrixVisible.IsChecked = true;
+            btnMatrixAnim.IsChecked = true;
+            sliderMatrixSpeed.Value = 1.0;
+            txtMatrixSpeed.Text = "1.0x";
+            _isApplyingTheme = false;
+
+            ApplyTheme("Ares");
+        }
+
+        private void ThemeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isApplyingTheme) return;
+            if (ThemeSelector.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                ApplyTheme(tag);
+            }
+        }
+
+        private void AccentSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isApplyingTheme) return;
+            if (AccentSelector.SelectedItem is ComboBoxItem item && item.Tag is string hexColor)
+            {
+                SetAccentColor(hexColor);
+            }
+        }
+
+        private void btnAutoScan_Click(object sender, RoutedEventArgs e)
+        {
+            bool enabled = btnAutoScan.IsChecked == true;
+            btnAutoScan.Content = enabled ? "AUTO SCAN ENABLED" : "AUTO SCAN DISABLED";
+
+            if (_scanTimer != null)
+            {
+                if (enabled)
+                {
+                    _scanTimer.Start();
+                    // Reflect resumed state in UI and kick off an immediate scan
+                    txtTarget.Text = "SYSTEM READY";
+                    txtTarget.Foreground = (SolidColorBrush)FindResource("TronCyan");
+                    RefreshGrid();
+                }
+                else
+                {
+                    _scanTimer.Stop();
+                    // Reflect paused state in UI
+                    txtTarget.Text = "SYSTEM PAUSED";
+                    txtTarget.Foreground = (Brush)FindResource("TronOrange");
+                }
+            }
+        }
+
+        private void btnMatrixVisible_Click(object sender, RoutedEventArgs e)
+        {
+            bool visible = btnMatrixVisible.IsChecked == true;
+            btnMatrixVisible.Content = visible ? "MATRIX VISIBLE" : "MATRIX HIDDEN";
+            MatrixCanvas.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void btnMatrixAnim_Click(object sender, RoutedEventArgs e)
+        {
+            bool enabled = btnMatrixAnim.IsChecked == true;
+            btnMatrixAnim.Content = enabled ? "MATRIX ANIMATION ON" : "MATRIX ANIMATION OFF";
+            if (_animTimer != null)
+            {
+                if (enabled) _animTimer.Start();
+                else _animTimer.Stop();
+            }
+        }
+
+        private void sliderMatrixSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            _matrixSpeedMultiplier = e.NewValue;
+            if (txtMatrixSpeed != null)
+            {
+                txtMatrixSpeed.Text = $"{_matrixSpeedMultiplier:0.0}x";
+            }
+        }
+
+        private void ApplyTheme(string themeTag)
+        {
+            _isApplyingTheme = true;
+
+            switch (themeTag)
+            {
+                case "WindowsDark":
+                    SetAccentColor("#0078D4", updateAccentSelector: true);
+                    SetBrushColor("AppBackgroundBrush", "#1E1E1E");
+                    SetBrushColor("CanvasBackgroundBrush", "#151515");
+                    SetBrushColor("PanelBackgroundBrush", "#252526");
+                    SetBrushColor("PanelBorderBrush", "#3C3C3C");
+                    SetBrushColor("TextPrimaryBrush", "#FFFFFF");
+                    SetBrushColor("TextSecondaryBrush", "#C8C8C8");
+                    break;
+                case "WindowsLight":
+                    SetAccentColor("#0078D4", updateAccentSelector: true);
+                    SetBrushColor("AppBackgroundBrush", "#F3F3F3");
+                    SetBrushColor("CanvasBackgroundBrush", "#F8F8F8");
+                    SetBrushColor("PanelBackgroundBrush", "#FFFFFF");
+                    SetBrushColor("PanelBorderBrush", "#D0D0D0");
+                    SetBrushColor("TextPrimaryBrush", "#111111");
+                    SetBrushColor("TextSecondaryBrush", "#555555");
+                    break;
+                default:
+                    SetAccentColor("#00EAFF", updateAccentSelector: true);
+                    SetBrushColor("AppBackgroundBrush", "#000510");
+                    SetBrushColor("CanvasBackgroundBrush", "#000205");
+                    SetBrushColor("PanelBackgroundBrush", "#050B1A");
+                    SetBrushColor("PanelBorderBrush", "#004488");
+                    SetBrushColor("TextPrimaryBrush", "#FFFFFF");
+                    SetBrushColor("TextSecondaryBrush", "#8899AA");
+                    break;
+            }
+
+            // Ensure commonly-used control brushes are set so font/backgrounds update consistently
+            // Fallback sensible defaults if keys are missing
+            SetBrushColorIfMissing("ControlBackgroundBrush", GetResourceColorOr("#050B1A", "PanelBackgroundBrush"));
+            SetBrushColorIfMissing("ControlForegroundBrush", GetResourceColorOr("#FFFFFF", "TextPrimaryBrush"));
+            SetBrushColorIfMissing("ComboBoxBackgroundBrush", GetResourceColorOr("#071219", "PanelBackgroundBrush"));
+            SetBrushColorIfMissing("ComboBoxForegroundBrush", GetResourceColorOr("#FFFFFF", "TextPrimaryBrush"));
+            SetBrushColorIfMissing("ComboBoxBorderBrush", GetResourceColorOr("#004488", "PanelBorderBrush"));
+
+            _isApplyingTheme = false;
+
+            // Register window/application styles so ComboBoxes and similar controls adopt the theme immediately
+            RegisterControlStyles();
+        }
+
+        private Color GetResourceColorOr(string hexDefault, string resourceKey)
+        {
+            if (TryFindResource(resourceKey) is SolidColorBrush brush) return brush.Color;
+            return (Color)ColorConverter.ConvertFromString(hexDefault);
+        }
+
+        private void SetBrushColorIfMissing(string resourceKey, Color color)
+        {
+            if (TryFindResource(resourceKey) is SolidColorBrush) return;
+            var brush = new SolidColorBrush(color);
+            this.Resources[resourceKey] = brush;
+            if (Application.Current != null)
+            {
+                Application.Current.Resources[resourceKey] = brush;
+            }
+        }
+
+        private void SetBrushColor(string resourceKey, string hexColor)
+        {
+            // Update existing brush resource if present; otherwise create one and publish to window & app resources
+            var color = (Color)ColorConverter.ConvertFromString(hexColor);
+
+            var found = TryFindResource(resourceKey);
+            if (found is SolidColorBrush existing)
+            {
+                // If frozen (read-only) we cannot set properties — replace with a new brush and publish it.
+                if (existing.IsFrozen)
+                {
+                    var newBrush = new SolidColorBrush(color);
+                    // freeze for performance only after assigning to resources (WPF will freeze when appropriate)
+                    this.Resources[resourceKey] = newBrush;
+                    if (Application.Current != null)
+                    {
+                        Application.Current.Resources[resourceKey] = newBrush;
+                    }
+                }
+                else
+                {
+                    existing.Color = color;
+                }
+                return;
+            }
+
+            // Not found - create and publish
+            var brush = new SolidColorBrush(color);
+            this.Resources[resourceKey] = brush;
+            if (Application.Current != null)
+            {
+                Application.Current.Resources[resourceKey] = brush;
+            }
+        }
+
+        private void RegisterControlStyles()
+        {
+            // Resolve brushes from resources
+            var comboBg = TryFindResource("ComboBoxBackgroundBrush") as Brush ?? TryFindResource("PanelBackgroundBrush") as Brush ?? Brushes.Transparent;
+            var comboFg = TryFindResource("ComboBoxForegroundBrush") as Brush ?? TryFindResource("TextPrimaryBrush") as Brush ?? Brushes.White;
+            var comboBorder = TryFindResource("ComboBoxBorderBrush") as Brush ?? TryFindResource("PanelBorderBrush") as Brush ?? Brushes.Transparent;
+            var accent = TryFindResource("TronCyan") as Brush ?? TryFindResource("TronBlue") as Brush ?? Brushes.Cyan;
+
+            // Also set system keys that standard control templates consult (helps override default white window backgrounds)
+            if (Application.Current != null)
+            {
+                Application.Current.Resources[SystemColors.WindowBrushKey] = comboBg;
+                Application.Current.Resources[SystemColors.ControlBrushKey] = comboBg;
+                Application.Current.Resources[SystemColors.HighlightBrushKey] = accent;
+                Application.Current.Resources[SystemColors.WindowTextBrushKey] = comboFg;
+                Application.Current.Resources[SystemColors.ControlTextBrushKey] = comboFg;
+            }
+            this.Resources[SystemColors.WindowBrushKey] = comboBg;
+            this.Resources[SystemColors.ControlBrushKey] = comboBg;
+            this.Resources[SystemColors.HighlightBrushKey] = accent;
+            this.Resources[SystemColors.WindowTextBrushKey] = comboFg;
+            this.Resources[SystemColors.ControlTextBrushKey] = comboFg;
+
+            // ComboBox style: background/foreground/border should follow theme; apply at application scope
+            var comboStyle = new Style(typeof(ComboBox));
+            comboStyle.Setters.Add(new Setter(Control.BackgroundProperty, comboBg));
+            comboStyle.Setters.Add(new Setter(Control.ForegroundProperty, comboFg));
+            comboStyle.Setters.Add(new Setter(Control.BorderBrushProperty, comboBorder));
+            comboStyle.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(6, 4, 6, 4)));
+
+            // ComboBoxItem style: ensure items use readable foreground & accent on highlight
+            var comboItemStyle = new Style(typeof(ComboBoxItem));
+            comboItemStyle.Setters.Add(new Setter(Control.ForegroundProperty, comboFg));
+            comboItemStyle.Setters.Add(new Setter(Control.BackgroundProperty, Brushes.Transparent));
+            var highlightTrigger = new Trigger { Property = Selector.IsSelectedProperty, Value = true };
+            highlightTrigger.Setters.Add(new Setter(Control.BackgroundProperty, accent));
+            highlightTrigger.Setters.Add(new Setter(Control.ForegroundProperty, TryFindResource("TextPrimaryBrush") as Brush ?? Brushes.White));
+            comboItemStyle.Triggers.Add(highlightTrigger);
+
+            // ToggleButton style (used by some dropdown parts / toggle buttons)
+            var toggleStyle = new Style(typeof(ToggleButton));
+            toggleStyle.Setters.Add(new Setter(Control.BackgroundProperty, comboBg));
+            toggleStyle.Setters.Add(new Setter(Control.ForegroundProperty, comboFg));
+            toggleStyle.Setters.Add(new Setter(Control.BorderBrushProperty, comboBorder));
+
+            // Apply application-wide so SettingsWindow + MainWindow pick it up without further changes
+            if (Application.Current != null)
+            {
+                Application.Current.Resources[typeof(ComboBox)] = comboStyle;
+                Application.Current.Resources[typeof(ComboBoxItem)] = comboItemStyle;
+                Application.Current.Resources[typeof(ToggleButton)] = toggleStyle;
+            }
+
+            // Also apply to current window resources for immediate update
+            this.Resources[typeof(ComboBox)] = comboStyle;
+            this.Resources[typeof(ComboBoxItem)] = comboItemStyle;
+            this.Resources[typeof(ToggleButton)] = toggleStyle;
+
+            // Optionally update known controls immediately
+            if (ThemeSelector != null)
+            {
+                ThemeSelector.Background = comboBg;
+                ThemeSelector.Foreground = comboFg;
+                ThemeSelector.BorderBrush = comboBorder;
+            }
+            if (AccentSelector != null)
+            {
+                AccentSelector.Background = comboBg;
+                AccentSelector.Foreground = comboFg;
+                AccentSelector.BorderBrush = comboBorder;
+            }
+        }
+
+        private void SetAccentColor(string hexColor, bool updateAccentSelector = false)
+        {
+            SetBrushColor("TronCyan", hexColor);
+            SetBrushColor("TronBlue", hexColor);
+
+            SetDropShadowColor("GlowCyan", hexColor);
+            SetDropShadowColor("TextGlow", hexColor);
+
+            if (updateAccentSelector)
+            {
+                SelectComboBoxItemByTag(AccentSelector, hexColor);
+            }
+        }
+
+        private void SetBrushColor(string resourceKey, string hexColor, bool _unused) => SetBrushColor(resourceKey, hexColor); // overload helper (kept for compatibility)
+
+        private void SetDropShadowColor(string resourceKey, string hexColor)
+        {
+            var color = (Color)ColorConverter.ConvertFromString(hexColor);
+
+            if (TryFindResource(resourceKey) is DropShadowEffect original)
+            {
+                // If frozen (read-only) clone a modifiable copy
+                var effect = original.IsFrozen ? original.CloneCurrentValue() : original;
+
+                effect.Color = color;
+
+                // Replace resource so future lookups return this instance
+                this.Resources[resourceKey] = effect;
+
+                // Update visuals that referenced the original instance
+                if (agentStatusDot?.Effect == original) agentStatusDot.Effect = effect;
+
+                if (MatrixCanvas != null)
+                {
+                    foreach (var tb in MatrixCanvas.Children.OfType<TextBlock>())
+                        if (tb.Effect == original) tb.Effect = effect;
+                }
+            }
+        }
+
+        private static void SelectComboBoxItemByTag(ComboBox comboBox, string tag)
+        {
+            if (comboBox == null) return;
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboItem && string.Equals(comboItem.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
+                {
+                    comboBox.SelectedItem = comboItem;
+                    return;
+                }
+            }
+        }
+
         private void gridConnections_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (gridConnections.SelectedItem is ConnectionInfo item)
@@ -649,13 +778,17 @@ namespace AresWin
             {
                 string prompt = $"Analyze Network Connection: Process '{item.ProcessName}', IP {item.RemoteAddress}, Network '{item.Network}', Port {item.RemotePort}. Risk Assessment?";
                 Clipboard.SetText(prompt);
-                MessageBox.Show("Prompt copied to clipboard.\nOpening AI...", "NEURAL LINK", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Use themed dialog instead of system MessageBox
+                ThemedMessageBox.Show(this, "NEURAL LINK", "Prompt copied to clipboard.\nOpening AI...");
 
                 try
                 {
                     Process.Start(new ProcessStartInfo { FileName = "https://gemini.google.com/app", UseShellExecute = true });
                 }
-                catch { }
+                catch
+                {
+                    ThemedMessageBox.Show(this, "NEURAL LINK", "Failed to open AI URL.");
+                }
             }
         }
 
@@ -779,6 +912,81 @@ namespace AresWin
                 }
 
                 return CompareText(left, right);
+            }
+        }
+
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                bool isChecked = btnSettings?.IsChecked == true;
+                
+                if (isChecked)
+                {
+                    // Open settings window
+                    if (_settingsWindow == null || !_settingsWindow.IsVisible)
+                    {
+                        _settingsWindow = new SettingsWindow(this);
+                        _settingsWindow.Closed += (s, ev) =>
+                        {
+                            if (btnSettings != null)
+                                btnSettings.IsChecked = false;
+                            _settingsWindow = null;
+                        };
+                        _settingsWindow.Show();
+                    }
+                }
+                else
+                {
+                    // Close settings window
+                    if (_settingsWindow != null && _settingsWindow.IsVisible)
+                    {
+                        _settingsWindow.Close();
+                        _settingsWindow = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Settings error: {ex.Message}");
+            }
+        }
+
+        public void ApplyThemePublic(string themeTag) => ApplyTheme(themeTag);
+        public void SetAccentColorPublic(string hexColor) => SetAccentColor(hexColor);
+
+        public void SetAutoScanState(bool enabled)
+        {
+            if (btnAutoScan != null)
+            {
+                btnAutoScan.IsChecked = enabled;
+                btnAutoScan_Click(null, null);
+            }
+        }
+
+        public void SetMatrixVisible(bool visible)
+        {
+            if (btnMatrixVisible != null)
+            {
+                btnMatrixVisible.IsChecked = visible;
+                btnMatrixVisible_Click(null, null);
+            }
+        }
+
+        public void SetMatrixAnimation(bool enabled)
+        {
+            if (btnMatrixAnim != null)
+            {
+                btnMatrixAnim.IsChecked = enabled;
+                btnMatrixAnim_Click(null, null);
+            }
+        }
+
+        public void SetMatrixSpeed(double speed)
+        {
+            if (sliderMatrixSpeed != null)
+            {
+                sliderMatrixSpeed.Value = speed;
             }
         }
     }
