@@ -47,6 +47,7 @@ namespace AresWin
         private DispatcherTimer? _animTimer;
         private List<MatrixStream> _matrixStreams = new List<MatrixStream>();
         private Random _rng = new Random();
+        private double _matrixSpeedMultiplier = 1.0;
 
         public MainWindow()
         {
@@ -69,6 +70,124 @@ namespace AresWin
 
             // Initial Scan
             RefreshGrid();
+        }
+
+        public void ApplyThemePublic(string themeTag)
+        {
+            var theme = (themeTag ?? string.Empty).Trim();
+            switch (theme)
+            {
+                case "WindowsDark":
+                    ApplyThemeColors(
+                        background: "#1E1E1E",
+                        border: "#3A3A3A",
+                        textPrimary: "#FFFFFF",
+                        textSecondary: "#B0B0B0",
+                        controlBackground: "#2D2D30",
+                        controlForeground: "#FFFFFF",
+                        comboBackground: "#2D2D30",
+                        comboForeground: "#FFFFFF",
+                        comboBorder: "#3A3A3A");
+                    break;
+                case "WindowsLight":
+                    ApplyThemeColors(
+                        background: "#F3F3F3",
+                        border: "#C8C8C8",
+                        textPrimary: "#111111",
+                        textSecondary: "#555555",
+                        controlBackground: "#FFFFFF",
+                        controlForeground: "#111111",
+                        comboBackground: "#FFFFFF",
+                        comboForeground: "#111111",
+                        comboBorder: "#C8C8C8");
+                    break;
+                case "Ares":
+                default:
+                    ApplyThemeColors(
+                        background: "#050B1A",
+                        border: "#004488",
+                        textPrimary: "#FFFFFF",
+                        textSecondary: "#8899AA",
+                        controlBackground: "#050B1A",
+                        controlForeground: "#00EAFF",
+                        comboBackground: "#050B1A",
+                        comboForeground: "#00EAFF",
+                        comboBorder: "#004488");
+                    break;
+            }
+        }
+
+        public void SetAccentColorPublic(string hexColor)
+        {
+            if (!TryParseColor(hexColor, out var color))
+            {
+                return;
+            }
+
+            UpdateBrushResource(Resources, "TronCyan", color);
+            UpdateBrushResource(Application.Current?.Resources, "TronCyan", color);
+            UpdateBrushResource(Application.Current?.Resources, "ControlForegroundBrush", color);
+            UpdateBrushResource(Application.Current?.Resources, "ComboBoxForegroundBrush", color);
+
+            if (Resources.Contains("GlowCyan") && Resources["GlowCyan"] is DropShadowEffect glow)
+            {
+                glow.Color = color;
+            }
+
+            var appResources = Application.Current?.Resources;
+            if (appResources != null && appResources.Contains("GlowCyan") && appResources["GlowCyan"] is DropShadowEffect appGlow)
+            {
+                appGlow.Color = color;
+            }
+        }
+
+        public void SetAutoScanState(bool enabled)
+        {
+            if (_scanTimer == null)
+            {
+                return;
+            }
+
+            if (enabled)
+            {
+                _scanTimer.Start();
+            }
+            else
+            {
+                _scanTimer.Stop();
+            }
+        }
+
+        public void SetMatrixVisible(bool visible)
+        {
+            if (MatrixCanvas == null)
+            {
+                return;
+            }
+
+            MatrixCanvas.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        public void SetMatrixAnimation(bool enabled)
+        {
+            if (_animTimer == null)
+            {
+                return;
+            }
+
+            if (enabled)
+            {
+                _animTimer.Start();
+            }
+            else
+            {
+                _animTimer.Stop();
+            }
+        }
+
+        public void SetMatrixSpeed(double speedMultiplier)
+        {
+            _matrixSpeedMultiplier = Math.Max(0.1, speedMultiplier);
         }
 
         // --- MATRIX ANIMATION ENGINE ---
@@ -142,9 +261,80 @@ namespace AresWin
 
         private void TickStream(MatrixStream s, double height)
         {
-            s.Y += s.Speed;
+            s.Y += s.Speed * _matrixSpeedMultiplier;
             if (s.Y > height) ResetStream(s, false, height);
             else s.Transform.Y = s.Y;
+        }
+
+        private void ApplyThemeColors(
+            string background,
+            string border,
+            string textPrimary,
+            string textSecondary,
+            string controlBackground,
+            string controlForeground,
+            string comboBackground,
+            string comboForeground,
+            string comboBorder)
+        {
+            var appResources = Application.Current?.Resources;
+            UpdateBrushResource(appResources, "PanelBackgroundBrush", background);
+            UpdateBrushResource(appResources, "PanelBorderBrush", border);
+            UpdateBrushResource(appResources, "TextPrimaryBrush", textPrimary);
+            UpdateBrushResource(appResources, "TextSecondaryBrush", textSecondary);
+            UpdateBrushResource(appResources, "ControlBackgroundBrush", controlBackground);
+            UpdateBrushResource(appResources, "ControlForegroundBrush", controlForeground);
+            UpdateBrushResource(appResources, "ComboBoxBackgroundBrush", comboBackground);
+            UpdateBrushResource(appResources, "ComboBoxForegroundBrush", comboForeground);
+            UpdateBrushResource(appResources, "ComboBoxBorderBrush", comboBorder);
+        }
+
+        private static void UpdateBrushResource(ResourceDictionary? resources, string key, string hexColor)
+        {
+            if (!TryParseColor(hexColor, out var color))
+            {
+                return;
+            }
+
+            UpdateBrushResource(resources, key, color);
+        }
+
+        private static void UpdateBrushResource(ResourceDictionary? resources, string key, Color color)
+        {
+            if (resources == null)
+            {
+                return;
+            }
+
+            if (resources.Contains(key) && resources[key] is SolidColorBrush brush)
+            {
+                brush.Color = color;
+                return;
+            }
+
+            resources[key] = new SolidColorBrush(color);
+        }
+
+        private static bool TryParseColor(string? value, out Color color)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                try
+                {
+                    var result = ColorConverter.ConvertFromString(value);
+                    if (result is Color converted)
+                    {
+                        color = converted;
+                        return true;
+                    }
+                }
+                catch (FormatException)
+                {
+                }
+            }
+
+            color = default;
+            return false;
         }
 
         // --- SCANNING LOGIC ---
